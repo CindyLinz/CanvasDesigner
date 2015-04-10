@@ -215,6 +215,15 @@ var parseCanvas = function(){
                   return res;
                 return ['num', res];
 
+              case 'dot':
+                if( args.length!==3 )
+                  thr('there should be 2 argument for dot');
+                args[1] = tuple2Pt(args[1]);
+                args[2] = tuple2Pt(args[2]);
+                if( args[1][0]!=='pt' || args[2][0]!=='pt' )
+                  thr('the both arguments for rad should be pts');
+                return ['num', args[1][1]*args[2][1] + args[1][2]*args[2][2]];
+
               default:
                 thr('unknown function "' + name + '"');
             }
