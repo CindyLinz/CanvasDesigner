@@ -7,7 +7,13 @@ var hideTab = {};
 var valTab = {};
 var symTab = {};
 
+var rafCb = function(){}
 var raf = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.oRequestAnimationFrame;
+var rafKeeper = function(t){
+  rafCb(t);
+  raf(rafKeeper);
+};
+rafKeeper();
 
 var drawCanvas = function(){
   var w = 100, h = 100, key, val;
@@ -65,7 +71,7 @@ var drawCanvas = function(){
   }
 }
 
-var evalCanvas = function(){
+var evalCanvas = function(t){
   var key, val;
   var ctrlHTML = '';
   var errHTML = '';
@@ -73,7 +79,7 @@ var evalCanvas = function(){
   for( key in symTab ){
     try {
       if( valTab[key]===undefined )
-        valTab[key] = symTab[key](0);
+        valTab[key] = symTab[key](t);
       val = valTab[key];
       if( !hideTab[key] )
         ctrlHTML += key + ' = ' + JSON.stringify(val) + '<br>';
@@ -86,6 +92,8 @@ var evalCanvas = function(){
   err.innerHTML = errHTML;
   if( errHTML==='' )
     drawCanvas();
+  else
+    rafCb = function(){};
 };
 
 var tuple2Pt = function(tuple){
@@ -298,17 +306,54 @@ var parseCanvas = function(){
       };
     };
 
+    var parseRange = function(src){
+      var term = [], i, endpoints, j;
+      src = src.split(/,/);
+      if( src.length==0 || src.length==1 && src[0].match(/^\s*$/) )
+        thr("empty range");
+      for(i=0; i<src.length; ++i){
+        endpoints = src[i].split(/~/);
+        for(j=0; j<endpoints.length; ++j)
+          endpoints[j] = parseExpr(endpoints[j]);
+        term[i] = endpoints;
+      }
+      return function(t){
+        var i, val = [];
+        var activeTerm = term[parseInt(t / 1000) % term.length];
+        for(i=0; i<activeTerm.length; ++i)
+          val[i] = activeTerm[i](t);
+        if( activeTerm.length==1 )
+          return val[0];
+
+        if( val[0][0]!=val[1][0] )
+          thr('range endpoints should be identical type');
+        if( val[0].length!=val[1].length )
+          thr('range endpoints should be identical size');
+        var delta = (t % 1000) / 1000;
+        var res = [val[0][0]];
+        for(i=1; i<val[0].length; ++i)
+          res[i] = (1-delta)*val[0][i] + delta*val[1][i];
+        return res;
+      };
+    };
+
     var parseExpr = function(src){
       var match;
-      while( src.match(/\([^()]*\)/) ){
-        src = src.replace(/\(([^()]*)\)/g, function($0, $1){
+      while( src.match(/\([^\]()[]*\)/) || src.match(/\[[^\]()[]*\]/) ){
+        src = src.replace(/\(([^\]()[]*)\)/g, function($0, $1){
           var newSym = 'CanvasDesignerAutoID_' + ++nextSym;
           hideTab[newSym] = true;
           symTab[newSym] = parseTuple($1);
           return ' '+newSym+' ';
         });
+        src = src.replace(/\[([^\]()[]*)\]/g, function($0, $1){
+          var newSym = 'CanvasDesignerAutoID_' + ++nextSym;
+          hideTab[newSym] = true;
+          symTab[newSym] = parseRange($1);
+          return ' '+newSym+' ';
+        });
       }
-      if( src.match(/\(|\)/) )
+      if( src.match(/[\]()[]/) )
         thr('unmatched parenthesis');
 
       var posTerm = [], negTerm = [];
@@ -388,9 +433,8 @@ var parseCanvas = function(){
     }
   });
   err.innerHTML = errHTML;
-  if( errHTML==='' ){
-    evalCanvas();
-  }
+  if( errHTML==='' )
+    rafCb = evalCanvas;
 };
 
 var queued = false;
@@ -404,3 +448,4 @@ editor.onkeyup = function(){
   });
 };
 parseCanvas();
+
