@@ -141,7 +141,7 @@ var parseCanvas = function(){
         name = match[1];
         params = match[2];
         return function(t){
-          var i;
+          var i, res;
           if( symTab[params] ){
             args = symTab[params](t);
             if( args[0]==='num' )
@@ -199,6 +199,19 @@ var parseCanvas = function(){
                 if( args[1][0]!=='pt' || args[2][0]!=='num' || args[3][0]!=='num' || args[4][0]!=='num' || args[5][0]!=='num' )
                   thr('args for arc should be first pt and others nums');
                 return ['arc', args[1], args[2], args[3], args[4], args[5]];
+
+              case 'pi':
+                if( args.length!==3 )
+                  thr('there should be 2 arguments for pi');
+                if( args[1][0]!=='num' )
+                  thr('the first arg for pi should be a num');
+                i = parseInt(args[1][1], 10) + 1;
+                if( i >= args[2].length )
+                  thr('pi out of range');
+                res = args[2][i];
+                if( typeof(res)===typeof([]) )
+                  return res;
+                return ['num', res];
 
               default:
                 thr('unknown function "' + name + '"');
