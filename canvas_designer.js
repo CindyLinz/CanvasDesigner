@@ -21,7 +21,7 @@ var drawCanvas = function(){
   ctx.fillStyle = '#0f0';
   ctx.lineWidth = 1;
   for( key in valTab ){
-    if( key.charAt(0)==='_' )
+    if( hideTab[key] )
       continue;
     val = tuple2Pt(valTab[key]);
     switch( val[0] ){
@@ -75,7 +75,7 @@ var evalCanvas = function(){
       if( valTab[key]===undefined )
         valTab[key] = symTab[key](0);
       val = valTab[key];
-      if( key.charAt(0)!=='_' )
+      if( !hideTab[key] )
         ctrlHTML += key + ' = ' + JSON.stringify(val) + '<br>';
     }
     catch(e){
@@ -298,7 +298,8 @@ var parseCanvas = function(){
       var match;
       while( src.match(/\([^()]*\)/) ){
         src = src.replace(/\(([^()]*)\)/g, function($0, $1){
-          var newSym = '_' + ++nextSym;
+          var newSym = 'CanvasDesignerAutoID_' + ++nextSym;
+          hideTab[newSym] = true;
           symTab[newSym] = parseTuple($1);
           return ' '+newSym+' ';
         });
@@ -365,8 +366,12 @@ var parseCanvas = function(){
     };
 
     try{
-      if( match = line.match(/^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=(.*)/) ){
-        symTab[match[1]] = parseExpr(match[2]);
+      if( match = line.match(/^\s*(_?)([a-zA-Z_][a-zA-Z0-9_]*)\s*=(.*)/) ){
+        symTab[match[2]] = parseExpr(match[3]);
+        if( match[1] )
+          hideTab[match[2]] = true;
+        else
+          delete(hideTab[match[2]]);
       }
       else{
         thr('ill shaped line "' + line +'"');
