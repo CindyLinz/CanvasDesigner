@@ -334,7 +334,7 @@ var parseCanvas = function(){
       }
       return function(t){
         var i, val = [];
-        var activeTerm = term[parseInt(t / 1000) % term.length];
+        var activeTerm = term[parseInt(t / 24000) % term.length];
         for(i=0; i<activeTerm.length; ++i)
           val[i] = activeTerm[i](t);
         if( activeTerm.length==1 )
@@ -344,7 +344,7 @@ var parseCanvas = function(){
           thr('range endpoints should be identical type');
         if( val[0].length!=val[1].length )
           thr('range endpoints should be identical size');
-        var delta = (t % 1000) / 1000;
+        var delta = (t % 24000) / 24000;
         var res = [val[0][0]];
         for(i=1; i<val[0].length; ++i)
           res[i] = (1-delta)*val[0][i] + delta*val[1][i];
