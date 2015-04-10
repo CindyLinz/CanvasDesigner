@@ -109,7 +109,9 @@ var parseCanvas = function(){
   symTab = {
     PI: function(t){ return ['num', Math.PI] }
   };
-  editor.value.replace(/^\s*(.*?)(?:|#.*?)[$\n]/gm, function($0, line){
+  var src = editor.value;
+  window.location.hash = '#' + encodeURIComponent(src);
+  src.replace(/^\s*(.*?)(?:|#.*?)[$\n]/gm, function($0, line){
     var lineNo = ++_lineNo;
     var match;
 
@@ -460,5 +462,7 @@ editor.onkeyup = function(){
     parseCanvas();
   });
 };
+if( window.location.hash.length > 2 )
+  editor.value = decodeURIComponent(window.location.hash.substr(1));
 parseCanvas();
 
