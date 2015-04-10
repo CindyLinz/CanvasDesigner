@@ -236,9 +236,9 @@ var parseCanvas = function(){
 
     var parseTerm = function(src){
       var match;
-      var firstTerm, mulTerm = [], divTerm = [];
+      var mulTerm = [], divTerm = [];
       if( match = src.match(/^\s*([^/*]*)(.*)/) ){
-        firstTerm = parseOne(match[1]);
+        mulTerm[0] = parseOne(match[1]);
         src = match[2];
       }
       else{
@@ -255,47 +255,46 @@ var parseCanvas = function(){
           thr('unrecognized pattern "'+src+'"');
         }
       }
-      if( mulTerm.length==0 && divTerm.length==0 )
-        return firstTerm;
+      if( mulTerm.length==1 && divTerm.length==0 )
+        return mulTerm[0];
 
       return function(t){
-        var firstVal, mulVal = [], divVal = [], i, val, x, y;
-        firstVal = tuple2Pt(firstTerm(t));
+        var val = ['num', 1], fac, i, r;
         for(i=0; i<mulTerm.length; ++i){
-          mulVal[i] = mulTerm[i](t);
-          if( mulVal[i][0]!=='num' )
-            thr('mulVal should be num');
+          fac = tuple2Pt(mulTerm[i](t));
+          if( fac[0]!=='num' && fac[0]!=='pt' )
+            thr('mulVal should be num or pt');
+          if( fac[0]==='num' ){
+            val[1] *= fac[1];
+            if( val[0]==='pt' )
+              val[2] *= fac[1];
+          }
+          else
+            if( val[0]==='num' )
+              val = ['pt', val[1]*fac[1], val[1]*fac[2]];
+            else
+              val = ['pt', val[1]*fac[1]-val[2]*fac[2], val[1]*fac[2]+val[2]*fac[1]];
         }
         for(i=0; i<divTerm.length; ++i){
-          divVal[i] = divTerm[i](t);
-          if( divVal[i][0]!=='num' )
-            thr('divVal should be num');
+          fac = tuple2Pt(divTerm[i](t));
+          if( fac[0]!=='num' && fac[0]!=='pt' )
+            thr('divVal should be num or pt');
+          if( fac[0]==='num' ){
+            val[1] /= fac[1];
+            if( val[0]==='pt' )
+              val[2] /= fac[1];
+          }
+          else{
+            r = fac[1]*fac[1] + fac[2]*fac[2];
+            fac[1] /= r;
+            fac[2] /= -r;
+            if( val[0]==='num' )
+              val = ['pt', val[1]*fac[1], val[2]*fac[2]];
+            else
+              val = ['pt', val[1]*fac[1]-val[2]*fac[2], val[1]*fac[2]+val[2]*fac[1]];
+          }
         }
-        switch( firstVal[0] ){
-          case 'num':
-            val = firstVal[1];
-            for(i=0; i<mulVal.length; ++i)
-              val *= mulVal[i][1];
-            for(i=0; i<divVal.length; ++i)
-              val /= divVal[i][1];
-            return ['num', val];
-
-          case 'pt':
-            x = firstVal[1];
-            y = firstVal[2];
-            for(i=0; i<mulVal.length; ++i){
-              x *= mulVal[i][1];
-              y *= mulVal[i][1];
-            }
-            for(i=0; i<divVal.length; ++i){
-              x /= divVal[i][1];
-              y /= divVal[i][1];
-            }
-            return ['pt', x, y];
-
-          default:
-            thr('only num or pt could be mul or div');
-        }
+        return val;
       };
     };
 
