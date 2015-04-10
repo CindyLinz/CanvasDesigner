@@ -5,17 +5,13 @@
         <title>Canvas Designer</title>
     </head>
     <body>
-        <table width=100%>
-            <tr valign=top>
-                <td><canvas id=canvas style=background-color:#ccc></canvas>
-                <td><div id=control style='height:400px;overflow-y:auto'></div>
-            <tr>
-                <td colspan=2>
-                    <textarea id=edit style='border:1px solid #ccc; height:300px; width:100%'>width = 500 # width
+        <canvas id=canvas style=background-color:#ccc;float:left></canvas>
+        <div id=control style='height:400px;width:400px;overflow:auto;float:right'></div>
+        <br style=clear:both>
+        <textarea id=edit style='border:1px solid #ccc; height:300px; width:100%'>width = 500 # width
 height = 300
 </textarea>
-                    <div id=error style='color:red'></div>
-        </table>
+        <div id=error style='color:red'></div>
         <script src=canvas_designer.js></script>
     </body>
 </html>
