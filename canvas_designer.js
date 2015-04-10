@@ -367,6 +367,8 @@ var parseCanvas = function(){
 
     try{
       if( match = line.match(/^\s*(_?)([a-zA-Z_][a-zA-Z0-9_]*)\s*=(.*)/) ){
+        if( symTab[match[2]] )
+          thr('redefined symbol "' + match[2] + '"');
         symTab[match[2]] = parseExpr(match[3]);
         if( match[1] )
           hideTab[match[2]] = true;
