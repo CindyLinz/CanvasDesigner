@@ -136,8 +136,12 @@ var parseCanvas = function(){
           var i;
           if( symTab[params] ){
             args = symTab[params](t);
-            if( args[0]!=='tuple' )
+            if( args[0]==='num' )
+              args = ['tuple', args];
+            if( args[0]!=='tuple' ){
+              console.log(args);
               thr('args should be vector of nums');
+            }
 
             if( Math[name]!==undefined ){
               args.shift();
