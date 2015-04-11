@@ -458,6 +458,8 @@ var parseCanvas = function(){
   err.innerHTML = errHTML;
   if( errHTML==='' )
     rafCb = evalCanvas;
+  else
+    rafCb = function(){};
 };
 
 var queued = false;
