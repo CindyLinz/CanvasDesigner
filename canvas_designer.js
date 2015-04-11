@@ -111,10 +111,9 @@ var parseCanvas = function(){
   };
   var src = editor.value;
   window.location.hash = '#' + encodeURIComponent(src);
-  src.replace(/^\s*(.*?)(?:|#.*?)[$\n]/gm, function($0, line){
+  src.replace(/^\s*(.*?)(?:|#.*?)$/gm, function($0, line){
     var lineNo = ++_lineNo;
     var match;
-
 
     if( line.match(/^\s*$/) )
       return;
