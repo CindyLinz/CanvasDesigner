@@ -297,7 +297,7 @@ var parseCanvas = function(){
             fac[1] /= r;
             fac[2] /= -r;
             if( val[0]==='num' )
-              val = ['pt', val[1]*fac[1], val[2]*fac[2]];
+              val = ['pt', val[1]*fac[1], val[1]*fac[2]];
             else
               val = ['pt', val[1]*fac[1]-val[2]*fac[2], val[1]*fac[2]+val[2]*fac[1]];
           }
